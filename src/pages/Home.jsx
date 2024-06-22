@@ -1,10 +1,38 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import HomeIMG from "../assets/Homeimg.png";
 import ProjectCard from "../components/ProjectCard";
 import { Card } from "react-bootstrap";
+import { homeProjectAPI } from "../services/allAPI";
+import { ToastContainer, toast } from "react-toastify";
 
 const Home = () => {
+  const navigate = useNavigate();
+  const [homeProjects, setHomeProjects] = useState([]);
+
+  // console.log(homeProjects);
+  useEffect(() => {
+    getHomeProjects();
+  }, []);
+  const getHomeProjects = async () => {
+    try {
+      const result = await homeProjectAPI();
+      // console.log(result);
+      if (result.status == 200) {
+        setHomeProjects(result.data);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleProject = () => {
+    if (sessionStorage.getItem("token")) {
+      navigate("/projects");
+    } else {
+      toast.warning("Please login to get full access to our projects!!!");
+    }
+  };
   return (
     <>
       <div
@@ -22,15 +50,15 @@ const Home = () => {
                 Where User can add and manage their projects. As well as
                 projects available in our website... what are you waiting for!!
               </p>
-              {sessionStorage.getItem("token")? 
+              {sessionStorage.getItem("token") ? (
                 <Link to="/dashboard" className="btn btn-warning">
                   MANAGE YOUR PROJECTS
                 </Link>
-               : 
+              ) : (
                 <Link to="/login" className="btn btn-warning">
                   START TO EXPLORE
                 </Link>
-              }
+              )}
             </div>
             <div className="col-lg-6">
               <img className="img-fluid" src={HomeIMG} alt="" />
@@ -42,12 +70,15 @@ const Home = () => {
         <h1 className="mb-5">Explore Our Projects</h1>
         <marquee>
           <div className="d-flex">
-            <div className="me-5">
-              <ProjectCard />
-            </div>
+            {homeProjects?.length > 0 &&
+              homeProjects?.map((project) => (
+                <div key={project?._id} className="me-5">
+                  <ProjectCard displayData={project} />
+                </div>
+              ))}
           </div>
         </marquee>
-        <button className="btn btn-link mt-5">
+        <button onClick={handleProject} className="btn btn-link mt-5">
           CLICK HERE VIEW MOE PROJECTS...
         </button>
       </div>
@@ -128,6 +159,7 @@ const Home = () => {
           </Card>
         </div>
       </div>
+      <ToastContainer position="top-center" theme="colored" autoClose={3000} />
     </>
   );
 };

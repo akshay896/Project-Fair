@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Modal, Button } from "react-bootstrap";
 import addimg from "../assets/addimg.png";
 import { ToastContainer, toast } from "react-toastify";
 import { addProjectAPI } from "../services/allAPI";
+import { addResponseContext } from "../contexts/ContextAPI";
 
 const Add = () => {
+  const { addResponse, setAddResponse } = useContext(addResponseContext);
   const [imageFileStatus, setImageFileStatus] = useState(false);
   const [preview, setPreview] = useState(addimg);
   const [projectDetails, setProjectDetails] = useState({
@@ -72,16 +74,17 @@ const Add = () => {
       if (token) {
         const reqHeader = {
           "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         };
         // api call-req,reqheader
         try {
           const result = await addProjectAPI(reqBody, reqHeader);
-          console.log(result);
+          // console.log(result);
 
           if (result.status == 200) {
             handleClose();
-            toast.success("Project add successfully");
+            // toast.success("Project add successfully");
+            setAddResponse(result);
           } else {
             toast.warning(result.response.data);
           }
